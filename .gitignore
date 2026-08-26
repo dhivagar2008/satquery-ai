@@ -13,3 +13,6 @@ static/
 ui.log
 *.log
 dist/
+
+.vercel
+.env*

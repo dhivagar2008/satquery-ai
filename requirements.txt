@@ -1,17 +1,10 @@
-streamlit>=1.40.0
+# SatQuery AI — serverless API dependencies (read by Vercel's Python runtime)
+# Mirrors api/requirements.txt; kept at repo root because the Vercel Python
+# builder resolves the dependency manifest from the project root.
 fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
+uvicorn>=0.32.0
 python-multipart>=0.0.12
-rasterio>=1.4.0
 numpy>=1.26.0,<3
-opencv-python>=4.10.0
-scikit-image>=0.24.0
-shapely>=2.0.0
-pydantic>=2.9.0
-groq>=0.13.0
-python-dotenv>=1.0.1
 pillow>=10.4.0
-pystac-client>=0.8.0
-planetary-computer>=1.0.0
-requests>=2.32.0
-pytest>=8.3.0
+tifffile>=2024.8.30
+scipy>=1.14.0

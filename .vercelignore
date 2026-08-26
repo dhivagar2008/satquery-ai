@@ -27,6 +27,5 @@ node_modules/
 # (leading slash = root only, so api/requirements.txt still ships!)
 /pyproject.toml
 /uv.lock
-/requirements.txt
 /.python-version
 /runtime.txt
