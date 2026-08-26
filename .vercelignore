@@ -29,3 +29,8 @@ node_modules/
 /uv.lock
 /.python-version
 /runtime.txt
+# Root desktop-app entries would trigger Vercel's backend-framework
+# detection (it then imports main.py instead of building api/index.py)
+/main.py
+/app.py
+/config.py
