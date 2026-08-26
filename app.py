@@ -8,8 +8,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import streamlit as st
 
 from views.common import render_shell
+from src.bootstrap import ensure_dataset, raw_scene_count
 
 render_shell()
+
+if raw_scene_count() == 0:
+    with st.spinner("Generating synthetic demo dataset (first run on a fresh deploy)…"):
+        ensure_dataset()
 
 page = st.navigation(
     [
