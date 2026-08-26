@@ -22,4 +22,11 @@ node_modules/
 .env
 .env.*
 !.env.example
-uv.lock
+# Root Python env specs conflict with Vercel's managed Python for api/;
+# the serverless function installs strictly from api/requirements.txt
+# (leading slash = root only, so api/requirements.txt still ships!)
+/pyproject.toml
+/uv.lock
+/requirements.txt
+/.python-version
+/runtime.txt
