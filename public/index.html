@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SatQuery AI — Multimodal Remote Sensing Assistant</title>
+<style>
+  :root{
+    --bg:#0b1120; --panel:#111b2e; --line:#1e2a45; --text:#e2e8f0;
+    --muted:#94a3b8; --accent:#06b6d4; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 10px}
+  header.hero{
+    background:radial-gradient(ellipse at top left,rgba(6,182,212,.18),transparent 60%),
+               linear-gradient(135deg,#0b1120,#111b2e);
+    border:1px solid var(--line);border-radius:16px;padding:28px 32px;margin-bottom:22px
+  }
+  h1{font-size:2rem;font-weight:800;letter-spacing:-.5px}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--muted);margin-top:6px;font-size:.95rem}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:linear-gradient(145deg,#101a2d,#0c1424);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card h3{font-size:.85rem;color:#7dd3fc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+  label{display:block;color:var(--muted);font-size:.8rem;margin:10px 0 5px}
+  input[type=file]{width:100%;color:var(--muted);font-size:.8rem;background:#0b1322;border:1px dashed #2a3b5f;border-radius:9px;padding:9px}
+  input[type=text],textarea{width:100%;background:#0b1322;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:11px 13px;font-size:.92rem;outline:none}
+  input:focus,textarea:focus{border-color:var(--accent)}
+  button.primary{
+    width:100%;margin-top:14px;padding:12px;border:none;border-radius:10px;cursor:pointer;
+    background:linear-gradient(90deg,#06b6d4,#3b82f6);color:#04121d;font-weight:700;font-size:.95rem
+  }
+  button.primary:disabled{opacity:.55;cursor:wait}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .chip{border:1px solid var(--line);background:#16223a;color:var(--text);border-radius:999px;
+        padding:6px 12px;font-size:.75rem;cursor:pointer}
+  .chip:hover{border-color:var(--accent)}
+  .status{display:inline-block;padding:.2rem .7rem;border-radius:999px;border:1px solid #334155;
+          background:#16223a;color:var(--text);font-size:.75rem;margin-right:.35rem}
+  .badges{margin-top:10px}
+  .metrics{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+  .metric{flex:1;min-width:130px;background:linear-gradient(145deg,#111b2e,#0d1526);
+          border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .metric .k{color:#7dd3fc;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+  .metric .v{font-size:1.05rem;font-weight:700;margin-top:4px}
+  .md{line-height:1.65;font-size:.93rem;color:#cbd5e1}
+  .md h3{color:#7dd3fc;margin:12px 0 6px;font-size:1rem}
+  .md ul{margin:6px 0 6px 20px}
+  .overlays{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+  .ov{max-width:320px}
+  .ov img{width:100%;border-radius:10px;border:1px solid var(--line)}
+  .ov .cap{color:var(--muted);font-size:.72rem;margin-top:4px;font-family:monospace}
+  pre.trace{background:#0a1020;border:1px solid var(--line);border-radius:10px;padding:12px;
+            font-size:.72rem;overflow:auto;color:#94a3b8;max-height:260px}
+  details{margin-top:14px}summary{cursor:pointer;color:#7dd3fc;font-size:.85rem}
+  .err{background:#2a1215;border:1px solid #7f1d1d;color:#fecaca;border-radius:10px;padding:12px;font-size:.85rem}
+  footer{text-align:center;color:#475569;font-size:.78rem;padding:26px 0 30px;border-top:1px solid #16223a;margin-top:34px}
+  footer b{color:#7dd3fc}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--accent);
+           border-bottom-color:transparent;border-radius:50%;animation:r 1s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes r{to{transform:rotate(360deg)}}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>SatQuery <span>AI</span> 🛰️</h1>
+    <div class="sub">Interactive Vision-Language Assistant for Multimodal Remote Sensing (Optical × SAR) — built for ISRO · SIH26167 · public lite-engine demo</div>
+    <div class="badges"><span class="status" id="healthBadge">checking API…</span></div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Data Sources</h3>
+      <label>Optical GeoTIFF (S2 blue/green/red/nir) *</label>
+      <input type="file" id="optical" accept=".tif,.tiff">
+      <label>SAR GeoTIFF (S1 vv/vh) — optional</label>
+      <input type="file" id="sar" accept=".tif,.tiff">
+      <label>Optical T2 — optional (enables change detection)</label>
+      <input type="file" id="t2" accept=".tif,.tiff">
+
+      <div style="margin-top:18px">
+        <h3>Query</h3>
+        <input type="text" id="query" placeholder="e.g. Highlight water bodies" value="">
+        <button class="primary" id="go">Analyze Scene →</button>
+        <div class="chips" id="chips"></div>
+      </div>
+    </div>
+
+    <div class="card" id="resultCard">
+      <h3>Results</h3>
+      <div id="placeholder" style="color:var(--muted);font-size:.88rem;line-height:1.7">
+        Upload at least an optical GeoTIFF, pick or type a query, then hit <b>Analyze Scene</b>.<br><br>
+        The agentic router selects the right engine:<br>
+        🔍 VQA Single · 🎯 Spatial Segmentation · ⏱️ Change Detection · 🔀 Cross-Modal Fusion<br><br>
+        No files handy? Any small 4-band GeoTIFF works — the bundled dataset generator in the repo creates demo scenes.
+      </div>
+      <div id="output" class="hidden">
+        <div id="intentBadges"></div>
+        <div class="metrics" id="metrics"></div>
+        <div class="md" id="answer"></div>
+        <div class="overlays" id="overlays"></div>
+        <details><summary>🧠 Router decision trace (JSON)</summary><pre class="trace" id="trace"></pre></details>
+      </div>
+      <div id="errorBox" class="err hidden"></div>
+    </div>
+  </div>
+
+  <footer>
+    🛰️ SatQuery AI · Interactive Vision-Language Assistant for ISRO Remote Sensing · SIH26167<br>
+    Published by <b>Dhivagar R</b>
+  </footer>
+</div>
+
+<script>
+const EXAMPLES = [
+  "Describe the land cover in this image",
+  "Highlight water bodies",
+  "Mask all agricultural zones",
+  "What changed between T1 and T2?",
+  "Has urban area expanded between the two dates?",
+  "Use the optical and SAR images together to identify built-up and water-covered regions"
+];
+const chipsEl = document.getElementById('chips');
+EXAMPLES.forEach(q => {
+  const c = document.createElement('button');
+  c.className = 'chip'; c.textContent = q;
+  c.onclick = () => { document.getElementById('query').value = q; };
+  chipsEl.appendChild(c);
+});
+
+fetch('/api/health').then(r=>r.json()).then(h=>{
+  document.getElementById('healthBadge').textContent =
+    `🟢 ${h.engine} online · ${h.intents.length} intents · by ${h.author}`;
+}).catch(()=>{
+  document.getElementById('healthBadge').textContent = '🔴 API unreachable';
+});
+
+function mdToHtml(md){
+  let html = md.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  html = html.replace(/^### (.*)$/gm,'<h3>$1</h3>');
+  html = html.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  html = html.replace(/^\s*[-•] (.*)$/gm,'<li>$1</li>');
+  html = html.replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g,'<ul>$1</ul>');
+  return html.replace(/\n{2,}/g,'<br>');
+}
+
+document.getElementById('go').onclick = async function(){
+  const btn = this;
+  const q = document.getElementById('query').value.trim() || 'Describe the land cover';
+  const fOpt = document.getElementById('optical').files[0];
+  const fSar = document.getElementById('sar').files[0];
+  const fT2  = document.getElementById('t2').files[0];
+  const errBox = document.getElementById('errorBox');
+
+  if(!fOpt){ errBox.textContent='⚠️ Please choose an optical GeoTIFF first.'; errBox.classList.remove('hidden'); return; }
+
+  errBox.classList.add('hidden');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Routing → analyzing…';
+
+  const fd = new FormData();
+  fd.append('query', q);
+  fd.append('optical_file', fOpt);
+  if(fSar) fd.append('sar_file', fSar);
+  if(fT2) fd.append('bitemporal_file', fT2);
+
+  try{
+    const res = await fetch('/api/query', {method:'POST', body: fd});
+    const data = await res.json();
+    if(!res.ok) throw new Error(typeof data.detail==='string' ? data.detail : JSON.stringify(data.detail));
+
+    document.getElementById('placeholder').classList.add('hidden');
+    document.getElementById('output').classList.remove('hidden');
+    document.getElementById('resultCard').scrollIntoView({behavior:'smooth'});
+
+    document.getElementById('intentBadges').innerHTML =
+      `<span class="status">${data.intent}</span>`+
+      `<span class="status">router: ${data.router_source}</span>`+
+      `<span class="status">engine: ${data.engine}</span>`;
+
+    const mEl = document.getElementById('metrics'); mEl.innerHTML='';
+    (data.metrics||[]).forEach(m=>{
+      mEl.insertAdjacentHTML('beforeend',
+        `<div class="metric"><div class="k">${m.label}</div><div class="v">${m.value}</div></div>`);
+    });
+
+    document.getElementById('answer').innerHTML = mdToHtml(data.answer_markdown);
+
+    const oEl = document.getElementById('overlays'); oEl.innerHTML='';
+    Object.entries(data.overlays_b64||{}).forEach(([name,b64])=>{
+      oEl.insertAdjacentHTML('beforeend',
+        `<div class="ov"><img src="data:image/jpeg;base64,${b64}" alt="${name}">
+         <div class="cap">${name}</div></div>`);
+    });
+
+    document.getElementById('trace').textContent =
+      JSON.stringify({intent:data.intent, reasoning:data.reasoning,
+                      tool_pipeline:data.tool_pipeline}, null, 2);
+  }catch(e){
+    errBox.textContent = '❌ ' + e.message; errBox.classList.remove('hidden');
+  }finally{
+    btn.disabled = false; btn.textContent = 'Analyze Scene →';
+  }
+};
+</script>
+</body>
+</html>

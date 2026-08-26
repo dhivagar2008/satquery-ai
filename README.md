@@ -101,3 +101,18 @@ winget install GitHub.cli ; gh auth login
 gh repo create satquery-ai --public --source=. --push
 ```
 
+## ▲ Deploying to Vercel (public demo site)
+
+The repo is Vercel-ready: `api/` = serverless **lite engine** (FastAPI + NumPy/tifffile/Pillow — no GDAL/OpenCV, fits Vercel's bundle limits) and `public/` = static dashboard client. Routing lives in `vercel.json`.
+
+**Deploy:** double-click **`DEPLOY_VERCEL.bat`** (login → `vercel --prod`), or via the [Vercel dashboard](https://vercel.com/new): import the GitHub repo → framework preset *Other* → deploy. Optional env var: `GROQ_API_KEY`.
+
+```powershell
+npx vercel@latest login
+npx vercel@latest --prod --yes     # → https://<project>.vercel.app
+```
+
+Endpoints on Vercel: `GET /api/health` · `POST /api/query` (multipart, same schema as local). Verify anytime: `uv run python scripts/verify_lite.py https://<project>.vercel.app`
+
+> **Where does what run?** Full experience (Streamlit UI + heavy CV engines + 3D studio) stays on the desktop via `START_SATQUERY.bat`. Vercel hosts the always-on public demo (upload → query → overlays). For the full Streamlit UI in the cloud, [Streamlit Community Cloud](https://streamlit.io/cloud) is the right free host — add it from the same GitHub repo with app path `app.py`.
+
