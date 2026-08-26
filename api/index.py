@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 try:
     from . import lite_engine as le
@@ -20,6 +23,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_PUBLIC_DIR = Path(__file__).resolve().parent.parent / "public"
+
+
+@app.get("/", include_in_schema=False)
+def landing():
+    index_html = _PUBLIC_DIR / "index.html"
+    if index_html.is_file():
+        return FileResponse(index_html, media_type="text/html")
+    raise HTTPException(404, "Dashboard not bundled; use the API endpoints directly.")
+
+
+@app.get("/api", include_in_schema=False)
+def api_root():
+    return {"status": "ok", "docs": "/docs", "health": "/api/health"}
 
 
 @app.get("/api/health")
@@ -137,3 +155,21 @@ async def query(
         "overlays_b64": overlays,
         "stats": {k: v for k, v in parts.items() if k != "scene"} | {"scene_shape": opt["shape"]},
     }
+
+
+@app.get("/{asset:path}", include_in_schema=False)
+def static_fallback(asset: str):
+    if asset.startswith("api/") or asset == "api":
+        raise HTTPException(404, f"Unknown API endpoint: /{asset}")
+    candidate = (_PUBLIC_DIR / asset).resolve()
+    if candidate.is_file() and str(candidate).startswith(str(_PUBLIC_DIR.resolve())):
+        media = {
+            ".html": "text/html", ".css": "text/css", ".js": "application/javascript",
+            ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml",
+            ".ico": "image/x-icon", ".json": "application/json",
+        }.get(candidate.suffix.lower(), "application/octet-stream")
+        return FileResponse(candidate, media_type=media)
+    index_html = _PUBLIC_DIR / "index.html"
+    if index_html.is_file():
+        return FileResponse(index_html, media_type="text/html")
+    raise HTTPException(404, f"Not found: /{asset}")

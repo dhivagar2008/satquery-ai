@@ -337,7 +337,23 @@ def fusion_analysis(opt: dict, sar: dict) -> dict:
     n = ndwi(opt)
     v = ndvi(opt)
     vv_key = "vv" if "vv" in sar["bands"] else next(iter(sar["bands"]))
-    vv_n = _percentile_norm(sar["bands"][vv_key].astype(np.float32)) / 255.0
+    vv_raw = sar["bands"][vv_key].astype(np.float32)
+
+    ref = None
+    for idx in (n, v):
+        if idx is not None:
+            ref = idx.shape
+            break
+    if ref is None:
+        ref = next(iter(opt["bands"].values())).shape
+
+    if vv_raw.shape != ref:
+        vv_n = np.asarray(
+            Image.fromarray(_percentile_norm(vv_raw)).resize((ref[1], ref[0])),
+            dtype=np.float32,
+        ) / 255.0
+    else:
+        vv_n = _percentile_norm(vv_raw) / 255.0
 
     water = ((n > 0.05) & (vv_n < 0.38)).astype(np.uint8) if n is not None else None
     built = ((v < 0.30) & (vv_n > 0.55)).astype(np.uint8) if v is not None else None
