@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/overlays/*
+!data/overlays/.gitkeep
+static/
+.pytest_cache/
+ui.log
+*.log
+dist/

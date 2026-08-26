@@ -1,0 +1,33 @@
+[project]
+name = "satquery-ai"
+version = "0.1.0"
+description = "SatQuery AI - Interactive Vision-Language Assistant for Multimodal Remote Sensing Image Analysis (SIH26167)"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "streamlit>=1.40.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+    "rasterio>=1.4.0",
+    "numpy>=1.26.0,<3",
+    "opencv-python>=4.10.0",
+    "scikit-image>=0.24.0",
+    "shapely>=2.0.0",
+    "pydantic>=2.9.0",
+    "groq>=0.13.0",
+    "python-dotenv>=1.0.1",
+    "pillow>=10.4.0",
+    "pystac-client>=0.8.0",
+    "planetary-computer>=1.0.0",
+    "requests>=2.32.0",
+    "plotly>=7.0.0",
+    "streamlit-oauth>=0.1.11",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+]
+
+[tool.uv]
+package = false
