@@ -74,3 +74,30 @@ Every LLM call degrades gracefully to deterministic rule-based CV when offline �
 uv run pytest tests -v          # 16 engine/router/GIS tests
 uv run python scripts/test_pages.py   # headless render of all 5 UI pages
 ```
+
+## 🔐 Login (Google OAuth)
+
+The site is gated behind a branded login page. Two ways in:
+
+1. **Google sign-in** — configure once:
+   - Go to [console.cloud.google.com](https://console.cloud.google.com/apis/credentials) → *Create Credentials → OAuth client ID → Web application*
+   - Add authorized redirect URI: `http://localhost:8501/`
+   - Copy the client ID/secret into `.env`:
+     ```ini
+     GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+     GOOGLE_CLIENT_SECRET=xxxx
+     ```
+   - Restart the app → "Continue with Google" goes live
+2. **Guest mode** — one-click demo access, always available (never breaks a live hackathon demo)
+
+## 🚢 Publishing to GitHub (public repo)
+
+Double-click **`PUBLISH_GITHUB.bat`** — it installs the GitHub CLI if needed, walks you through your own secure `gh auth login`, then creates the **public** repo `satquery-ai` and pushes everything.
+
+Manual equivalent:
+
+```powershell
+winget install GitHub.cli ; gh auth login
+gh repo create satquery-ai --public --source=. --push
+```
+
