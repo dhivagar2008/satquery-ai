@@ -14,6 +14,10 @@ GROQ_VISION_MODEL = os.getenv(
     "GROQ_VISION_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct"
 ).strip()
 
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "").strip()
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://integrate.api.nvidia.com/v1").strip()
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-ai/deepseek-v4-pro-0813").strip()
+
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "").strip()
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "").strip()
 GOOGLE_REDIRECT_URI = os.getenv(
@@ -39,7 +43,7 @@ SAR_BANDS = ["vv", "vh"]
 
 
 def llm_available() -> bool:
-    return bool(GROQ_API_KEY)
+    return bool(GROQ_API_KEY or DEEPSEEK_API_KEY)
 
 
 def ensure_importable():

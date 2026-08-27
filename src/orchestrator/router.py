@@ -165,8 +165,34 @@ def _default_step(intent: str, ctx: QueryContext) -> ToolStep:
 def route_query(ctx: QueryContext) -> IntentResult:
     if config.llm_available():
         try:
+            # Prefer DeepSeek v4 Pro if API key available, else fallback to Groq
+            if config.DEEPSEEK_API_KEY:
+                from openai import OpenAI
+                client = OpenAI(
+                    api_key=config.DEEPSEEK_API_KEY,
+                    base_url=config.DEEPSEEK_BASE_URL
+                )
+                completion = client.chat.completions.create(
+                    model=config.DEEPSEEK_MODEL,
+                    temperature=0,
+                    response_format={"type": "json_object"},
+                    messages=[
+                        {"role": "system", "content": ORCHESTRATOR_SYSTEM_PROMPT},
+                        {
+                            "role": "user",
+                            "content": json.dumps({
+                                "user_query": ctx.user_query,
+                                "has_optical": ctx.has_optical,
+                                "has_sar": ctx.has_sar,
+                                "is_bitemporal": ctx.is_bitemporal,
+                            }),
+                        },
+                    ],
+                )
+                raw = completion.choices[0].message.content or ""
+                return _parse_llm_json(raw, ctx)
+            
             from groq import Groq
-
             client = Groq(api_key=config.GROQ_API_KEY)
             completion = client.chat.completions.create(
                 model=config.GROQ_TEXT_MODEL,
